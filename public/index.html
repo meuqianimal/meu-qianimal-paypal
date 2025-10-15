@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu QI Animal 🧠</title>
+<style>
+body {font-family:Poppins,sans-serif;background:linear-gradient(135deg,#002868,#ffd500);color:white;text-align:center;margin:0;padding:0;}
+.container {max-width:800px;margin:auto;background:rgba(255,255,255,0.1);border-radius:20px;padding:30px;margin-top:30px;}
+button {background:#ffd500;color:#002868;border:none;border-radius:10px;padding:12px 25px;font-size:16px;font-weight:bold;cursor:pointer;margin-top:10px;}
+button:hover {background:#fff;color:#002868;}
+input {padding:10px;width:80%;border-radius:8px;border:none;margin:5px;}
+.hidden {display:none;}
+.paybox {margin-top:20px;background:white;color:#002868;padding:15px;border-radius:12px;}
+.paytitle {margin:0 0 10px 0}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🐾 Meu QI Animal 🧠</h1>
+  <p>Descubra qual animal representa sua inteligência!<br>Faça o teste gratuito e veja seu resultado real.</p>
+
+  <div id="cadastro">
+    <input type="text" id="nome" placeholder="Seu nome" required><br>
+    <input type="email" id="email" placeholder="Seu e-mail" required><br>
+    <input type="date" id="nascimento" required><br>
+    <button onclick="iniciarTeste()">Começar Teste</button>
+  </div>
+
+  <div id="perguntas" class="hidden">
+    <h2>Pergunta <span id="numPergunta">1</span> de 20</h2>
+    <p id="textoPergunta"></p>
+    <div id="opcoes"></div>
+  </div>
+
+  <div id="resultado" class="hidden">
+    <h2>Resultado do seu QI Animal:</h2>
+    <p id="descricaoAnimal"></p>
+
+    <h3>💎 Desbloqueie resultados Premium</h3>
+    <p>Quer saber qual <b>Predador</b> ou <b>Cachorro</b> representa sua mente?</p>
+
+    <div class="paybox">
+      <h3 class="paytitle">🦁 Predador — R$ 4,99</h3>
+      <div id="paypal-btn-predador"></div>
+    </div>
+
+    <div class="paybox">
+      <h3 class="paytitle">🐶 Cachorro — R$ 9,99</h3>
+      <div id="paypal-btn-cachorro"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@2/dist/email.min.js"></script>
+<script>(function(){emailjs.init("_MYa1lFUG7SbKNEHG");})();</script>
+
+<script src="/config.js"></script>
+
+<script>
+(function loadPayPalSDK(){
+  const id = window.PAYPAL_CLIENT_ID;
+  const s = document.createElement("script");
+  s.src = "https://www.paypal.com/sdk/js?client-id="+encodeURIComponent(id)+"&currency=BRL";
+  s.onload = () => console.log("PayPal SDK carregado");
+  document.head.appendChild(s);
+})();
+
+const perguntas = [
+  {texto:"Você se considera mais racional ou emocional?", op:["Racional","Equilibrado","Emocional","Depende do dia"]},
+  {texto:"Quando algo dá errado, você:", op:["Procura solução","Analisa","Pede ajuda","Desiste fácil"]},
+  {texto:"Você aprende melhor:", op:["Lendo","Praticando","Observando","Ouvindo"]},
+  {texto:"Qual dessas palavras mais combina com você?", op:["Criativo","Analítico","Paciente","Curioso"]},
+  {texto:"Como você reage sob pressão?", op:["Mantém a calma","Resolve rápido","Pede apoio","Fica nervoso"]},
+  {texto:"Você prefere trabalhar:", op:["Sozinho","Em grupo","Depende","Tanto faz"]},
+  {texto:"Seu ponto forte é:", op:["Comunicação","Lógica","Empatia","Iniciativa"]},
+  {texto:"Qual dessas áreas mais te interessa?", op:["Tecnologia","Artes","Natureza","Negócios"]},
+  {texto:"Como lida com mudanças?", op:["Adapta-se rápido","Analisa","Evita","Fica ansioso"]},
+  {texto:"Você se sente mais motivado por:", op:["Desafios","Reconhecimento","Aprendizado","Segurança"]},
+  {texto:"Quando tem uma ideia nova, você:", op:["Coloca em prática","Pensa muito","Pede opinião","Anota pra depois"]},
+  {texto:"Em discussões, você:", op:["Ouve mais","Defende sua visão","Evita conflitos","Tenta convencer"]},
+  {texto:"Seu tipo de inteligência dominante é:", op:["Lógica","Interpessoal","Criativa","Naturalista"]},
+  {texto:"Você costuma ser:", op:["Organizado","Espontâneo","Indeciso","Detalhista"]},
+  {texto:"Quando alguém te critica, você:", op:["Aprende","Ignora","Fica ofendido","Responde"]},
+  {texto:"Você prefere ambientes:", op:["Calmos","Dinâmicos","Competitivos","Colaborativos"]},
+  {texto:"Se fosse um líder, seria:", op:["Motivador","Justo","Visionário","Exigente"]},
+  {texto:"Você costuma confiar:", op:["Em poucos","Somente em si","Em todos","Depende"]},
+  {texto:"Você é mais movido por:", op:["Razão","Emoção","Intuição","Experiência"]},
+  {texto:"Como descreveria seu foco?", op:["Constante","Disciplinado","Variável","Distraído"]}
+];
+
+let atual=0,pontos=0;
+
+function iniciarTeste(){
+  const nome=document.getElementById("nome").value;
+  const email=document.getElementById("email").value;
+  if(!nome||!email){alert("Preencha nome e e-mail.");return;}
+  localStorage.setItem("nome_usuario", nome);
+  localStorage.setItem("email_usuario", email);
+  document.getElementById("cadastro").classList.add("hidden");
+  document.getElementById("perguntas").classList.remove("hidden");
+  mostrarPergunta();
+}
+function mostrarPergunta(){
+  document.getElementById("numPergunta").innerText = atual+1;
+  document.getElementById("textoPergunta").innerText = perguntas[atual].texto;
+  const divOp=document.getElementById("opcoes"); divOp.innerHTML="";
+  perguntas[atual].op.forEach((txt,i)=>{
+    const btn=document.createElement("button");
+    btn.innerText=txt;
+    btn.onclick=()=>responder(i+1);
+    divOp.appendChild(btn);
+  });
+}
+function responder(valor){
+  pontos+=valor;
+  atual++;
+  if(atual<perguntas.length) mostrarPergunta();
+  else mostrarResultado();
+}
+function mostrarResultado(){
+  const QI = Math.round(70 + (pontos/80)*70);
+  localStorage.setItem("pontuacao_usuario", pontos);
+  localStorage.setItem("qi_usuario", QI);
+  document.getElementById("perguntas").classList.add("hidden");
+  document.getElementById("resultado").classList.remove("hidden");
+
+  let animal="";
+  if(QI<=84) animal="🐢 Tartaruga — Paciente e observadora. (QI "+QI+")";
+  else if(QI<=99) animal="🦊 Raposa — Astuta e analítica. (QI "+QI+")";
+  else if(QI<=109) animal="🐬 Golfinho — Comunicativo e empático. (QI "+QI+")";
+  else if(QI<=124) animal="🐒 Chimpanzé — Criativo e curioso. (QI "+QI+")";
+  else animal="🦉 Coruja — Sábia e estratégica. (QI "+QI+")";
+
+  document.getElementById("descricaoAnimal").innerText=animal;
+  emailjs.send("service_a0nleyh","template_testeqi",{
+    nome:localStorage.getItem("nome_usuario"),
+    email:localStorage.getItem("email_usuario"),
+    resultado:animal
+  });
+
+  renderPayPalButton("predador","paypal-btn-predador","/premium/predador");
+  renderPayPalButton("cachorro","paypal-btn-cachorro","/premium/cachorro");
+}
+
+function renderPayPalButton(tipo, containerId, redirectTo){
+  if (typeof paypal === "undefined") return setTimeout(()=>renderPayPalButton(tipo,containerId,redirectTo), 200);
+  const el = document.getElementById(containerId);
+  el.innerHTML = "";
+
+  paypal.Buttons({
+    style: { layout: "horizontal", shape: "pill", label: "pay", tagline: false },
+    createOrder: async () => {
+      const r = await fetch("/api/paypal/create", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ tipo })
+      });
+      const j = await r.json();
+      if(!j.orderID) throw new Error("Falha ao criar ordem.");
+      return j.orderID;
+    },
+    onApprove: async (data) => {
+      const r = await fetch("/api/paypal/capture", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        credentials: "include",
+        body: JSON.stringify({ orderID: data.orderID, tipo })
+      });
+      const j = await r.json();
+      if(j.ok){
+        window.location.href = redirectTo;
+      } else {
+        alert("Não foi possível liberar o acesso: " + (j.error || "erro"));
+      }
+    },
+    onError: (err) => {
+      console.error(err);
+      alert("Ocorreu um erro no pagamento.");
+    }
+  }).render("#"+containerId);
+}
+</script>
+</body>
+</html>

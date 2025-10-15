@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐶 Resultado Premium — Espírito de Lealdade | Meu QI Animal</title>
+<style>
+body{font-family:Poppins,sans-serif;background:linear-gradient(135deg,#002868,#ffd500);color:white;text-align:center;margin:0;padding:0}
+.container{max-width:800px;margin:auto;padding:40px;animation:fadeIn 1.5s ease-in}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+button{background:#ffd500;color:#002868;border:none;border-radius:10px;padding:12px 25px;font-weight:bold;font-size:16px;cursor:pointer;transition:all .3s}
+button:hover{background:white;color:#002868}
+.share-btn{background:white;color:#002868;margin:8px;padding:10px 18px;border-radius:8px;font-weight:bold;cursor:pointer;display:inline-block;transition:all .3s}
+.share-btn:hover{background:#ffd500;color:#002868}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🐾 Seu Espírito de Lealdade!</h1>
+  <p id="descricao"></p>
+  <h3>📈 Seu QI estimado: <span id="qi"></span></h3>
+
+  <div class="share-section">
+    <h3>📲 Compartilhe seu resultado:</h3>
+    <button class="share-btn" onclick="compartilharWhatsApp()">WhatsApp</button>
+    <button class="share-btn" onclick="compartilharFacebook()">Facebook</button>
+    <button class="share-btn" onclick="compartilharInstagram()">Instagram Story</button>
+  </div>
+
+  <button onclick="window.location.href='/'" style="margin-top:25px;">🏠 Voltar ao início</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@2/dist/email.min.js"></script>
+<script>(function(){ emailjs.init("_MYa1lFUG7SbKNEHG"); })();</script>
+<script>
+window.onload = function() {
+  const nome = localStorage.getItem("nome_usuario") || "Usuário";
+  const email = localStorage.getItem("email_usuario") || "sememail@teste.com";
+  const qi = parseInt(localStorage.getItem("qi_usuario")) || 100;
+  document.getElementById("qi").innerText = qi;
+
+  let descricao = "";
+  if(qi<=99){
+    descricao = "🐕 <b>Golden Retriever</b> — Leal, calmo e protetor.<br>Você é confiável e inspira harmonia.";
+  } else if(qi<=119){
+    descricao = "🐺 <b>Pastor Alemão</b> — Inteligente, disciplinado e protetor.<br>Você é líder natural e estrategista nato.";
+  } else {
+    descricao = "🐶 <b>Husky Siberiano</b> — Livre, leal e destemido.<br>Você inspira e guia pelo exemplo.";
+  }
+  document.getElementById("descricao").innerHTML = descricao;
+
+  emailjs.send("service_a0nleyh","template_cachorro",{
+    nome:nome, email:email, resultado:descricao+" (QI "+qi+")"
+  });
+}
+function compartilharWhatsApp(){
+  const texto = encodeURIComponent("Meu espírito animal é o 🐶 no teste do Meu QI Animal! Faça o seu em meuqianimal.com.br 🧠🐾");
+  window.open("https://api.whatsapp.com/send?text="+texto,"_blank");
+}
+function compartilharFacebook(){
+  const url = encodeURIComponent("https://meuqianimal.com.br");
+  const texto = encodeURIComponent("Descobri que sou um cachorro leal no teste do Meu QI Animal 🧠🐾");
+  window.open("https://www.facebook.com/sharer/sharer.php?u="+url+"&quote="+texto,"_blank");
+}
+function compartilharInstagram(){
+  alert("📸 Para compartilhar no Instagram Stories:\n1️⃣ Tire um print desta tela.\n2️⃣ Abra o Instagram → Stories → Adicione o print.\n3️⃣ Marque @meuqianimal e inspire seus amigos! 🧠🐾");
+}
+</script>
+</body>
+</html>
